@@ -20,13 +20,9 @@
 			"dbHost": "127.0.0.1",
 			"dbPort": "3306"
 		},
-		"./mailpit": {
-			"smtpPort": "1025",
-			"uiPort": "8025"
-		},
 		"./pgadmin": {
 			"port": "8082"
-		}
+		},
 	},
 
 	// Configure tool-specific properties.
