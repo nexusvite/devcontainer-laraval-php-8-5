@@ -143,13 +143,14 @@ if [ -f /usr/local/bin/filebrowser-entrypoint ]; then
 fi
 
 # Set up Claude Code authentication
-# Priority: 1) ANTHROPIC_API_KEY env var, 2) Host credentials mounted from /root/.claude
+# Priority: 1) ANTHROPIC_API_KEY env var, 2) Host credentials copied by initializeCommand
+CRED_FILE=".devcontainer/.claude-credentials"
 if [ -n "$ANTHROPIC_API_KEY" ]; then
     echo "ANTHROPIC_API_KEY is set for Claude Code"
-elif [ -f "/host-claude/.credentials.json" ]; then
+elif [ -f "$CRED_FILE" ]; then
     echo "Copying Claude Code credentials from host..."
     mkdir -p ~/.claude
-    cp /host-claude/.credentials.json ~/.claude/.credentials.json
+    cp "$CRED_FILE" ~/.claude/.credentials.json
     chmod 600 ~/.claude/.credentials.json
     echo "Claude Code credentials configured (OAuth from host)"
 else

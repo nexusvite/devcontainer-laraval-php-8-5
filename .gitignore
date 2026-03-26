@@ -9,3 +9,4 @@
 /.fleet
 /.nova
 /.zed
+.devcontainer/.claude-credentials
