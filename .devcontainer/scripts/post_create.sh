@@ -15,11 +15,22 @@ for i in $(seq 1 15); do
     sleep 2
 done
 
-# Install system packages (done here instead of Dockerfile because
-# Coder's Docker build phase has restricted network access)
-echo "Installing system packages..."
-sudo apt-get update && sudo apt-get install -y --no-install-recommends mariadb-client \
-    && sudo apt-get clean -y && sudo rm -rf /var/lib/apt/lists/*
+# Install system packages and upgrade to PHP 8.5 (done here instead of Dockerfile
+# because Coder's Docker build phase has restricted network access)
+echo "Installing system packages and PHP 8.5..."
+sudo apt-get update && sudo apt-get install -y --no-install-recommends mariadb-client lsb-release ca-certificates
+
+# Add Sury PHP repository and install PHP 8.5
+curl -sSLo /tmp/debsuryorg-archive-keyring.deb https://packages.sury.org/debsuryorg-archive-keyring.deb
+sudo dpkg -i /tmp/debsuryorg-archive-keyring.deb
+echo "deb [signed-by=/usr/share/keyrings/deb.sury.org-php.gpg] https://packages.sury.org/php/ $(lsb_release -sc) main" | sudo tee /etc/apt/sources.list.d/sury-php.list > /dev/null
+sudo apt-get update
+sudo apt-get install -y --no-install-recommends \
+    php8.5 php8.5-cli php8.5-common php8.5-curl php8.5-mbstring \
+    php8.5-xml php8.5-zip php8.5-mysql php8.5-readline php8.5-intl php8.5-gd
+sudo update-alternatives --set php /usr/bin/php8.5
+sudo apt-get clean -y && sudo rm -rf /var/lib/apt/lists/* /tmp/debsuryorg-archive-keyring.deb
+echo "PHP version: $(php -v | head -1)"
 
 # Install code-server (standalone method — no dpkg/apt dependencies needed)
 if ! command -v code-server > /dev/null 2>&1; then
