@@ -18,18 +18,34 @@ done
 # Remove stale yarn repo (expired GPG key breaks apt-get update)
 sudo rm -f /etc/apt/sources.list.d/yarn.list
 
+# Helper: apt-get install with retries for flaky Coder network
+apt_install_retry() {
+    local max=3
+    for attempt in $(seq 1 $max); do
+        echo "  apt-get install attempt $attempt/$max..."
+        if sudo apt-get install -y --no-install-recommends --fix-missing "$@"; then
+            return 0
+        fi
+        echo "  Retrying after failure..."
+        sleep 5
+        sudo apt-get update
+    done
+    echo "ERROR: apt-get install failed after $max attempts"
+    return 1
+}
+
 # Install system packages and upgrade to PHP 8.5 (done here instead of Dockerfile
 # because Coder's Docker build phase has restricted network access)
 echo "Installing system packages and PHP 8.5..."
-sudo apt-get update && sudo apt-get install -y --no-install-recommends mariadb-client lsb-release ca-certificates
+sudo apt-get update
+apt_install_retry mariadb-client lsb-release ca-certificates
 
 # Add Sury PHP repository and install PHP 8.5
-curl --retry 5 --retry-delay 3 -sSLo /tmp/debsuryorg-archive-keyring.deb https://packages.sury.org/debsuryorg-archive-keyring.deb
+curl --retry 5 --retry-delay 5 --retry-all-errors -sSLo /tmp/debsuryorg-archive-keyring.deb https://packages.sury.org/debsuryorg-archive-keyring.deb
 sudo dpkg -i /tmp/debsuryorg-archive-keyring.deb
 echo "deb [signed-by=/usr/share/keyrings/deb.sury.org-php.gpg] https://packages.sury.org/php/ $(lsb_release -sc) main" | sudo tee /etc/apt/sources.list.d/sury-php.list > /dev/null
 sudo apt-get update
-sudo apt-get install -y --no-install-recommends \
-    php8.5 php8.5-cli php8.5-common php8.5-curl php8.5-mbstring \
+apt_install_retry php8.5 php8.5-cli php8.5-common php8.5-curl php8.5-mbstring \
     php8.5-xml php8.5-zip php8.5-mysql php8.5-readline php8.5-intl php8.5-gd
 sudo update-alternatives --set php /usr/bin/php8.5
 sudo apt-get clean -y && sudo rm -rf /var/lib/apt/lists/* /tmp/debsuryorg-archive-keyring.deb
