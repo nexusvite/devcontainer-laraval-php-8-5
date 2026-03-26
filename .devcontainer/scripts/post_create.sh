@@ -7,7 +7,7 @@ echo "Running post-create setup..."
 # Wait for DNS/network to be ready (network_mode: service:db may delay resolution)
 echo "Waiting for network..."
 for i in $(seq 1 30); do
-    if getent hosts packages.sury.org > /dev/null 2>&1; then
+    if getent hosts github.com > /dev/null 2>&1; then
         echo "  Network ready"
         break
     fi
@@ -34,27 +34,13 @@ apt_install_retry() {
     return 1
 }
 
-# Install system packages and upgrade to PHP 8.5 (done here instead of Dockerfile
-# because Coder's Docker build phase has restricted network access)
-echo "Installing system packages and PHP 8.5..."
+# Install system packages (done here instead of Dockerfile because
+# Coder's Docker build phase has restricted network access)
+echo "Installing system packages..."
 sudo apt-get update
-apt_install_retry mariadb-client lsb-release ca-certificates
+apt_install_retry mariadb-client
 
-# Add Sury PHP repository and install PHP 8.5
-curl --retry 5 --retry-delay 5 --retry-all-errors -sSLo /tmp/debsuryorg-archive-keyring.deb https://packages.sury.org/debsuryorg-archive-keyring.deb
-sudo dpkg -i /tmp/debsuryorg-archive-keyring.deb
-echo "deb [signed-by=/usr/share/keyrings/deb.sury.org-php.gpg] https://packages.sury.org/php/ $(lsb_release -sc) main" | sudo tee /etc/apt/sources.list.d/sury-php.list > /dev/null
-sudo apt-get update
-apt_install_retry php8.5 php8.5-cli php8.5-common php8.5-curl php8.5-mbstring \
-    php8.5-xml php8.5-zip php8.5-mysql php8.5-readline php8.5-intl php8.5-gd
-sudo update-alternatives --set php /usr/bin/php8.5
-
-# Ensure all PHP 8.5 modules are enabled (mysqli needed for phpMyAdmin)
-sudo phpenmod -v 8.5 mysqli pdo_mysql curl mbstring xml zip intl gd 2>/dev/null || true
-
-sudo apt-get clean -y && sudo rm -rf /var/lib/apt/lists/* /tmp/debsuryorg-archive-keyring.deb
 echo "PHP version: $(php -v | head -1)"
-echo "PHP modules: $(php -m | tr '\n' ' ')"
 
 # Install code-server (standalone method — no dpkg/apt dependencies needed)
 if ! command -v code-server > /dev/null 2>&1; then
