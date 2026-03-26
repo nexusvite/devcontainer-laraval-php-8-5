@@ -42,18 +42,6 @@ apt_install_retry mariadb-client
 
 echo "PHP version: $(php -v | head -1)"
 
-# Install code-server (standalone method — no dpkg/apt dependencies needed)
-if ! command -v code-server > /dev/null 2>&1; then
-    echo "Installing code-server..."
-    for attempt in 1 2 3; do
-        if curl --retry 3 --retry-delay 3 --retry-all-errors -fsSL https://code-server.dev/install.sh | sudo sh -s -- --method=standalone --prefix=/usr/local; then
-            break
-        fi
-        echo "  code-server install attempt $attempt failed, retrying..."
-        sleep 5
-    done
-fi
-
 # Ensure nvm and Node.js are available
 export NVM_DIR="${HOME}/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"

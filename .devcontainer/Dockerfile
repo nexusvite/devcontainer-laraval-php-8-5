@@ -17,5 +17,8 @@ COPY --from=php85 /usr/local/bin/phpize /usr/local/bin/phpize
 COPY --from=php85 /usr/local/lib/php/ /usr/local/lib/php/
 COPY --from=php85 /usr/local/etc/php/ /usr/local/etc/php/
 
+# Install code-server
+RUN curl -fsSL https://code-server.dev/install.sh | sh -s -- --method=standalone --prefix=/usr/local
+
 # Install Node.js LTS, yarn, and Claude Code CLI
 RUN su vscode -c "source /usr/local/share/nvm/nvm.sh && nvm install --lts && nvm use --lts && npm install -g yarn @anthropic-ai/claude-code" 2>&1
