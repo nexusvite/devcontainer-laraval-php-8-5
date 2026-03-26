@@ -6,7 +6,7 @@
 	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
 
 	// Runs on HOST before docker-compose: generate .env and copy Claude credentials if available
-	"initializeCommand": "cd .devcontainer && EXISTING_KEY=$(grep '^ANTHROPIC_API_KEY=' .env 2>/dev/null | cut -d= -f2) ; echo \"DB_NAME=${CODER_WORKSPACE_NAME:-${localWorkspaceFolderBasename}}\" > .env && echo \"DB_USER=root\" >> .env && echo \"DB_PASSWORD=mariadb\" >> .env && echo \"ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-$EXISTING_KEY}\" >> .env ; cp ~/.claude/.credentials.json .claude-credentials 2>/dev/null || true",
+	"initializeCommand": "cd .devcontainer && EXISTING_KEY=$(grep '^ANTHROPIC_API_KEY=' .env 2>/dev/null | cut -d= -f2) ; echo \"DB_NAME=${CODER_WORKSPACE_NAME:-${localWorkspaceFolderBasename}}\" > .env && echo \"DB_USER=root\" >> .env && echo \"DB_PASSWORD=mariadb\" >> .env && echo \"ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-$EXISTING_KEY}\" >> .env ; cp ~/.claude/.credentials.json .claude-credentials 2>/dev/null || cp /root/.claude/.credentials.json .claude-credentials 2>/dev/null || cp /home/coder/.claude/.credentials.json .claude-credentials 2>/dev/null || true",
 
 	// Local features only — no external features that pull in common-utils
 	// (apt-get is unavailable during Coder's Docker build phase).
