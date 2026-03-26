@@ -34,11 +34,10 @@ apt_install_retry() {
     return 1
 }
 
-# Install system packages (done here instead of Dockerfile because
-# Coder's Docker build phase has restricted network access)
+# Install system packages (non-fatal — Coder network can be flaky)
 echo "Installing system packages..."
-sudo apt-get update
-apt_install_retry mariadb-client
+sudo apt-get update 2>/dev/null
+apt_install_retry mariadb-client || echo "Warning: mariadb-client install failed (network issue). Install manually later: sudo apt-get install mariadb-client"
 
 echo "PHP version: $(php -v | head -1)"
 
