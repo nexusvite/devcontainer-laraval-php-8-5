@@ -15,6 +15,9 @@ for i in $(seq 1 15); do
     sleep 2
 done
 
+# Remove stale yarn repo (expired GPG key breaks apt-get update)
+sudo rm -f /etc/apt/sources.list.d/yarn.list
+
 # Install system packages and upgrade to PHP 8.5 (done here instead of Dockerfile
 # because Coder's Docker build phase has restricted network access)
 echo "Installing system packages and PHP 8.5..."
