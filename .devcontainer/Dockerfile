@@ -2,11 +2,16 @@ FROM php:8.5-cli-bookworm AS php85
 
 # Build required extensions in the PHP 8.5 image
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        libicu-dev libfreetype6-dev libjpeg62-turbo-dev libpng-dev libzip-dev libpq-dev \
+        libicu-dev libfreetype6-dev libjpeg62-turbo-dev libpng-dev libzip-dev libpq-dev unzip \
     && docker-php-ext-install mysqli pdo pdo_mysql pdo_pgsql pgsql sockets pcntl intl zip \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install gd \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Download pgweb here where unzip is available
+RUN curl -fsSL "https://github.com/sosedoff/pgweb/releases/download/v0.16.2/pgweb_linux_amd64.zip" -o /tmp/pgweb.zip \
+    && unzip -o /tmp/pgweb.zip -d /tmp/ \
+    && chmod +x /tmp/pgweb_linux_amd64
 
 FROM mcr.microsoft.com/devcontainers/php:1-8.4-bookworm
 
@@ -27,12 +32,8 @@ RUN curl -fsSL https://code-server.dev/install.sh | sh -s -- --method=standalone
 RUN curl -fsSL "https://github.com/axllent/mailpit/releases/download/v1.24.1/mailpit-linux-amd64.tar.gz" | tar -xz -C /usr/local/bin/ mailpit \
     && chmod +x /usr/local/bin/mailpit
 
-# Install pgweb (PostgreSQL web admin) - use php to extract zip since unzip/bsdtar unavailable
-RUN curl -fsSL "https://github.com/sosedoff/pgweb/releases/download/v0.16.2/pgweb_linux_amd64.zip" -o /tmp/pgweb.zip \
-    && php -r '$z=new ZipArchive();$z->open("/tmp/pgweb.zip");$z->extractTo("/tmp/");$z->close();' \
-    && mv /tmp/pgweb_linux_amd64 /usr/local/bin/pgweb \
-    && chmod +x /usr/local/bin/pgweb \
-    && rm -f /tmp/pgweb.zip
+# Copy pgweb from build stage
+COPY --from=php85 /tmp/pgweb_linux_amd64 /usr/local/bin/pgweb
 
 # Install Node.js LTS, yarn, and Claude Code CLI
 RUN su vscode -c "source /usr/local/share/nvm/nvm.sh && nvm install --lts && nvm use --lts && npm install -g yarn @anthropic-ai/claude-code" 2>&1
