@@ -38,4 +38,12 @@ if ! pgrep -f "php.*phpmyadmin" > /dev/null; then
     fi
 fi
 
+# Start Mailpit if not already running
+if ! pgrep -f "mailpit" > /dev/null; then
+    echo "Starting Mailpit..."
+    if [ -f /usr/local/bin/mailpit-entrypoint ]; then
+        /usr/local/bin/mailpit-entrypoint || true
+    fi
+fi
+
 echo "Post-start setup complete!"

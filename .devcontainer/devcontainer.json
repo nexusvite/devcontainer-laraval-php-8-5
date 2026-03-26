@@ -19,6 +19,10 @@
 			"port": "8081",
 			"dbHost": "127.0.0.1",
 			"dbPort": "3306"
+		},
+		"./mailpit": {
+			"smtpPort": "1025",
+			"uiPort": "8025"
 		}
 	},
 
@@ -82,6 +86,8 @@
 		8080,
 		3306,
 		8081,
+		8025,
+		1025,
 		13337,
 		13339,
 		5173
@@ -106,6 +112,14 @@
 		"8081": {
 			"label": "phpMyAdmin",
 			"onAutoForward": "notify"
+		},
+		"8025": {
+			"label": "Mailpit",
+			"onAutoForward": "notify"
+		},
+		"1025": {
+			"label": "Mailpit SMTP",
+			"onAutoForward": "silent"
 		},
 		"13337": {
 			"label": "code-server",

@@ -55,6 +55,18 @@ DB_PORT="${DB_PORT:-3306}"
 
 echo "Database available: $DB_NAME @ $DB_HOST:$DB_PORT"
 
+# Generate root .env file from .env.example with actual credentials
+if [ -f ".env.example" ] && [ ! -f ".env" ]; then
+    echo "Creating .env from .env.example..."
+    cp .env.example .env
+    sed -i -E "s/^DB_DATABASE=.*/DB_DATABASE=$DB_NAME/" .env
+    sed -i -E "s/^DB_USERNAME=.*/DB_USERNAME=$DB_USER/" .env
+    sed -i -E "s/^DB_PASSWORD=.*/DB_PASSWORD=$DB_PASSWORD/" .env
+    sed -i -E "s/^DB_HOST=.*/DB_HOST=$DB_HOST/" .env
+    sed -i -E "s/^DB_PORT=.*/DB_PORT=$DB_PORT/" .env
+    echo ".env configured with DB and Mailpit credentials"
+fi
+
 # Install PHP dependencies if composer.json exists
 if [ -f "composer.json" ] && [ ! -d "vendor" ]; then
     echo "Installing Composer dependencies..."
