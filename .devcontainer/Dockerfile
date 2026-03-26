@@ -17,9 +17,8 @@ COPY --from=php85 /usr/local/bin/phpize /usr/local/bin/phpize
 COPY --from=php85 /usr/local/lib/php/ /usr/local/lib/php/
 COPY --from=php85 /usr/local/etc/php/ /usr/local/etc/php/
 
-# Install libpq for PostgreSQL PHP extensions
-RUN apt-get update && apt-get install -y --no-install-recommends libpq5 \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+# Copy libpq from build stage (apt-get unavailable during Coder's Docker build)
+COPY --from=php85 /usr/lib/x86_64-linux-gnu/libpq.so* /usr/lib/x86_64-linux-gnu/
 
 # Install code-server
 RUN curl -fsSL https://code-server.dev/install.sh | sh -s -- --method=standalone --prefix=/usr/local
