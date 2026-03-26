@@ -6,12 +6,12 @@ echo "Running post-create setup..."
 
 # Wait for DNS/network to be ready (network_mode: service:db may delay resolution)
 echo "Waiting for network..."
-for i in $(seq 1 15); do
-    if getent hosts github.com > /dev/null 2>&1; then
+for i in $(seq 1 30); do
+    if getent hosts packages.sury.org > /dev/null 2>&1; then
         echo "  Network ready"
         break
     fi
-    echo "  Waiting for DNS... ($i/15)"
+    echo "  Waiting for DNS... ($i/30)"
     sleep 2
 done
 
@@ -24,7 +24,7 @@ echo "Installing system packages and PHP 8.5..."
 sudo apt-get update && sudo apt-get install -y --no-install-recommends mariadb-client lsb-release ca-certificates
 
 # Add Sury PHP repository and install PHP 8.5
-curl -sSLo /tmp/debsuryorg-archive-keyring.deb https://packages.sury.org/debsuryorg-archive-keyring.deb
+curl --retry 5 --retry-delay 3 -sSLo /tmp/debsuryorg-archive-keyring.deb https://packages.sury.org/debsuryorg-archive-keyring.deb
 sudo dpkg -i /tmp/debsuryorg-archive-keyring.deb
 echo "deb [signed-by=/usr/share/keyrings/deb.sury.org-php.gpg] https://packages.sury.org/php/ $(lsb_release -sc) main" | sudo tee /etc/apt/sources.list.d/sury-php.list > /dev/null
 sudo apt-get update
