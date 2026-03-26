@@ -23,5 +23,16 @@ COPY --from=php85 /usr/lib/x86_64-linux-gnu/libpq.so* /usr/lib/x86_64-linux-gnu/
 # Install code-server
 RUN curl -fsSL https://code-server.dev/install.sh | sh -s -- --method=standalone --prefix=/usr/local
 
+# Install Mailpit (email testing)
+RUN curl -fsSL "https://github.com/axllent/mailpit/releases/download/v1.24.1/mailpit-linux-amd64.tar.gz" | tar -xz -C /usr/local/bin/ mailpit \
+    && chmod +x /usr/local/bin/mailpit
+
+# Install pgweb (PostgreSQL web admin)
+RUN curl -fsSL "https://github.com/sosedoff/pgweb/releases/download/v0.16.2/pgweb_linux_amd64.zip" -o /tmp/pgweb.zip \
+    && python3 -m zipfile -e /tmp/pgweb.zip /tmp/ \
+    && mv /tmp/pgweb_linux_amd64 /usr/local/bin/pgweb \
+    && chmod +x /usr/local/bin/pgweb \
+    && rm -f /tmp/pgweb.zip
+
 # Install Node.js LTS, yarn, and Claude Code CLI
 RUN su vscode -c "source /usr/local/share/nvm/nvm.sh && nvm install --lts && nvm use --lts && npm install -g yarn @anthropic-ai/claude-code" 2>&1

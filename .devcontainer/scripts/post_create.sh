@@ -41,24 +41,6 @@ apt_install_retry mariadb-client || echo "Warning: mariadb-client install failed
 
 echo "PHP version: $(php -v | head -1)"
 
-# Install pgweb if not available (feature install may fail due to network)
-if ! command -v pgweb > /dev/null 2>&1; then
-    echo "Installing pgweb..."
-    curl --retry 3 --retry-all-errors -fsSL "https://github.com/sosedoff/pgweb/releases/download/v0.16.2/pgweb_linux_amd64.zip" -o /tmp/pgweb.zip 2>/dev/null \
-        && (cd /tmp && python3 -m zipfile -e pgweb.zip . && sudo mv pgweb_linux_amd64 /usr/local/bin/pgweb && sudo chmod +x /usr/local/bin/pgweb && rm -f pgweb.zip) \
-        && echo "pgweb installed" \
-        || echo "Warning: pgweb install failed. Install manually later."
-fi
-
-# Install mailpit if not available (feature install may fail due to network)
-if ! command -v mailpit > /dev/null 2>&1; then
-    echo "Installing mailpit..."
-    curl --retry 3 --retry-all-errors -fsSL "https://github.com/axllent/mailpit/releases/download/v1.24.1/mailpit-linux-amd64.tar.gz" -o /tmp/mailpit.tar.gz 2>/dev/null \
-        && (cd /tmp && tar -xzf mailpit.tar.gz && sudo mv mailpit /usr/local/bin/mailpit && sudo chmod +x /usr/local/bin/mailpit && rm -f mailpit.tar.gz) \
-        && echo "mailpit installed" \
-        || echo "Warning: mailpit install failed. Install manually later."
-fi
-
 # Ensure nvm and Node.js are available
 export NVM_DIR="${HOME}/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"

@@ -59,14 +59,14 @@ if ! pgrep -f "pgweb" > /dev/null && command -v pgweb > /dev/null 2>&1; then
 fi
 
 # Start Mailpit if not already running
-if ! pgrep -f "mailpit" > /dev/null && command -v mailpit > /dev/null 2>&1; then
+if ! pgrep -x "mailpit" > /dev/null && command -v mailpit > /dev/null 2>&1; then
     echo "Starting Mailpit..."
-    if [ -f /usr/local/bin/mailpit-entrypoint ]; then
-        /usr/local/bin/mailpit-entrypoint || true
+    nohup mailpit --smtp 0.0.0.0:1025 --listen 0.0.0.0:8025 --webroot / > /tmp/mailpit.log 2>&1 &
+    sleep 1
+    if pgrep -x "mailpit" > /dev/null; then
+        echo "  Mailpit running (SMTP: 1025, UI: 8025)"
     else
-        # Fallback: start mailpit directly
-        nohup mailpit --smtp 0.0.0.0:1025 --listen 0.0.0.0:8025 --webroot / > /tmp/mailpit.log 2>&1 &
-        echo "  Mailpit started (SMTP: 1025, UI: 8025)"
+        echo "  Warning: Mailpit failed to start. Check /tmp/mailpit.log"
     fi
 fi
 
