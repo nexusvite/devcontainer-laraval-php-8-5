@@ -48,13 +48,24 @@ sudo apt-get update
 apt_install_retry php8.5 php8.5-cli php8.5-common php8.5-curl php8.5-mbstring \
     php8.5-xml php8.5-zip php8.5-mysql php8.5-readline php8.5-intl php8.5-gd
 sudo update-alternatives --set php /usr/bin/php8.5
+
+# Ensure all PHP 8.5 modules are enabled (mysqli needed for phpMyAdmin)
+sudo phpenmod -v 8.5 mysqli pdo_mysql curl mbstring xml zip intl gd 2>/dev/null || true
+
 sudo apt-get clean -y && sudo rm -rf /var/lib/apt/lists/* /tmp/debsuryorg-archive-keyring.deb
 echo "PHP version: $(php -v | head -1)"
+echo "PHP modules: $(php -m | tr '\n' ' ')"
 
 # Install code-server (standalone method — no dpkg/apt dependencies needed)
 if ! command -v code-server > /dev/null 2>&1; then
     echo "Installing code-server..."
-    curl -fsSL https://code-server.dev/install.sh | sudo sh -s -- --method=standalone --prefix=/usr/local
+    for attempt in 1 2 3; do
+        if curl --retry 3 --retry-delay 3 --retry-all-errors -fsSL https://code-server.dev/install.sh | sudo sh -s -- --method=standalone --prefix=/usr/local; then
+            break
+        fi
+        echo "  code-server install attempt $attempt failed, retrying..."
+        sleep 5
+    done
 fi
 
 # Ensure nvm and Node.js are available
