@@ -29,7 +29,7 @@ RUN curl -fsSL "https://github.com/axllent/mailpit/releases/download/v1.24.1/mai
 
 # Install pgweb (PostgreSQL web admin)
 RUN curl -fsSL "https://github.com/sosedoff/pgweb/releases/download/v0.16.2/pgweb_linux_amd64.zip" -o /tmp/pgweb.zip \
-    && python3 -m zipfile -e /tmp/pgweb.zip /tmp/ \
+    && bsdtar -xf /tmp/pgweb.zip -C /tmp/ \
     && mv /tmp/pgweb_linux_amd64 /usr/local/bin/pgweb \
     && chmod +x /usr/local/bin/pgweb \
     && rm -f /tmp/pgweb.zip
