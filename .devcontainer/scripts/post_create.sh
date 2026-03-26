@@ -142,9 +142,18 @@ if [ -f /usr/local/bin/filebrowser-entrypoint ]; then
     sudo chmod +x /usr/local/bin/filebrowser-entrypoint 2>/dev/null || true
 fi
 
-# Set up Claude Code credentials from ANTHROPIC_API_KEY env var
+# Set up Claude Code authentication
+# Priority: 1) ANTHROPIC_API_KEY env var, 2) Host credentials mounted from /root/.claude
 if [ -n "$ANTHROPIC_API_KEY" ]; then
     echo "ANTHROPIC_API_KEY is set for Claude Code"
+elif [ -f "/host-claude/.credentials.json" ]; then
+    echo "Copying Claude Code credentials from host..."
+    mkdir -p ~/.claude
+    cp /host-claude/.credentials.json ~/.claude/.credentials.json
+    chmod 600 ~/.claude/.credentials.json
+    echo "Claude Code credentials configured (OAuth from host)"
+else
+    echo "Note: Set ANTHROPIC_API_KEY or auth with 'claude auth login' after startup"
 fi
 
 # Copy SSH keys from host if available
