@@ -1,0 +1,32 @@
+{
+	"id": "pgadmin",
+	"version": "0.0.1",
+	"name": "pgAdmin (Lightweight)",
+	"description": "A lightweight web-based PostgreSQL administration tool using pgweb",
+	"options": {
+		"port": {
+			"type": "string",
+			"default": "8082",
+			"description": "The port to run pgweb on"
+		}
+	},
+	"entrypoint": "/usr/local/bin/pgadmin-entrypoint",
+	"customizations": {
+		"coder": {
+			"apps": [
+				{
+					"slug": "pgweb",
+					"displayName": "pgAdmin",
+					"url": "http://localhost:${localEnv:FEATURE_PGADMIN_OPTION_PORT:8082}",
+					"icon": "/icon/database.svg",
+					"order": 8,
+					"healthcheck": {
+						"url": "http://localhost:${localEnv:FEATURE_PGADMIN_OPTION_PORT:8082}",
+						"interval": 5,
+						"threshold": 2
+					}
+				}
+			]
+		}
+	}
+}

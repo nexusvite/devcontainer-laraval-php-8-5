@@ -2,8 +2,8 @@ FROM php:8.5-cli-bookworm AS php85
 
 # Build required extensions in the PHP 8.5 image
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        libicu-dev libfreetype6-dev libjpeg62-turbo-dev libpng-dev libzip-dev \
-    && docker-php-ext-install mysqli pdo pdo_mysql sockets pcntl intl zip \
+        libicu-dev libfreetype6-dev libjpeg62-turbo-dev libpng-dev libzip-dev libpq-dev \
+    && docker-php-ext-install mysqli pdo pdo_mysql pdo_pgsql pgsql sockets pcntl intl zip \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install gd \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
@@ -16,6 +16,10 @@ COPY --from=php85 /usr/local/bin/php-config /usr/local/bin/php-config
 COPY --from=php85 /usr/local/bin/phpize /usr/local/bin/phpize
 COPY --from=php85 /usr/local/lib/php/ /usr/local/lib/php/
 COPY --from=php85 /usr/local/etc/php/ /usr/local/etc/php/
+
+# Install libpq for PostgreSQL PHP extensions
+RUN apt-get update && apt-get install -y --no-install-recommends libpq5 \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install code-server
 RUN curl -fsSL https://code-server.dev/install.sh | sh -s -- --method=standalone --prefix=/usr/local

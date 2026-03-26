@@ -38,6 +38,14 @@ if ! pgrep -f "php.*phpmyadmin" > /dev/null; then
     fi
 fi
 
+# Start pgweb (PostgreSQL Admin) if not already running
+if ! pgrep -f "pgweb" > /dev/null; then
+    echo "Starting pgweb..."
+    if [ -f /usr/local/bin/pgadmin-entrypoint ]; then
+        /usr/local/bin/pgadmin-entrypoint || true
+    fi
+fi
+
 # Start Mailpit if not already running
 if ! pgrep -f "mailpit" > /dev/null; then
     echo "Starting Mailpit..."

@@ -1,12 +1,12 @@
 // For format details, see https://aka.ms/devcontainer.json.
 {
-	"name": "PHP 8.5 - MariaDB",
+	"name": "PHP 8.5 - MariaDB - PostgreSQL",
 	"dockerComposeFile": "docker-compose.yml",
 	"service": "app",
 	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
 
 	// Runs on HOST before docker-compose: generate .env and copy Claude credentials if available
-	"initializeCommand": "cd .devcontainer && EXISTING_KEY=$(grep '^ANTHROPIC_API_KEY=' .env 2>/dev/null | cut -d= -f2) ; echo \"DB_NAME=${CODER_WORKSPACE_NAME:-${localWorkspaceFolderBasename}}\" > .env && echo \"DB_USER=root\" >> .env && echo \"DB_PASSWORD=mariadb\" >> .env && echo \"ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-$EXISTING_KEY}\" >> .env ; cp ~/.claude/.credentials.json .claude-credentials 2>/dev/null || cp /root/.claude/.credentials.json .claude-credentials 2>/dev/null || cp /home/coder/.claude/.credentials.json .claude-credentials 2>/dev/null || true",
+	"initializeCommand": "cd .devcontainer && EXISTING_KEY=$(grep '^ANTHROPIC_API_KEY=' .env 2>/dev/null | cut -d= -f2) ; echo \"DB_NAME=${CODER_WORKSPACE_NAME:-${localWorkspaceFolderBasename}}\" > .env && echo \"DB_USER=root\" >> .env && echo \"DB_PASSWORD=mariadb\" >> .env && echo \"PG_USER=postgres\" >> .env && echo \"PG_PASSWORD=postgres\" >> .env && echo \"ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-$EXISTING_KEY}\" >> .env ; cp ~/.claude/.credentials.json .claude-credentials 2>/dev/null || cp /root/.claude/.credentials.json .claude-credentials 2>/dev/null || cp /home/coder/.claude/.credentials.json .claude-credentials 2>/dev/null || true",
 
 	// Local features only — no external features that pull in common-utils
 	// (apt-get is unavailable during Coder's Docker build phase).
@@ -23,6 +23,9 @@
 		"./mailpit": {
 			"smtpPort": "1025",
 			"uiPort": "8025"
+		},
+		"./pgadmin": {
+			"port": "8082"
 		}
 	},
 
@@ -75,6 +78,20 @@
 						"interval": 5,
 						"threshold": 2
 					}
+				},
+				{
+					"slug": "mailpit",
+					"displayName": "Mailpit",
+					"url": "http://127.0.0.1:8025",
+					"openIn": "slim-window",
+					"share": "owner",
+					"icon": "/icon/mailpit.svg",
+					"order": 7,
+					"healthCheck": {
+						"url": "http://127.0.0.1:8025/api/v1/info",
+						"interval": 5,
+						"threshold": 2
+					}
 				}
 			]
 		}
@@ -85,7 +102,9 @@
 		8000,
 		8080,
 		3306,
+		5432,
 		8081,
+		8082,
 		8025,
 		1025,
 		13337,
@@ -109,8 +128,16 @@
 			"label": "MariaDB",
 			"onAutoForward": "silent"
 		},
+		"5432": {
+			"label": "PostgreSQL",
+			"onAutoForward": "silent"
+		},
 		"8081": {
 			"label": "phpMyAdmin",
+			"onAutoForward": "notify"
+		},
+		"8082": {
+			"label": "pgAdmin",
 			"onAutoForward": "notify"
 		},
 		"8025": {
