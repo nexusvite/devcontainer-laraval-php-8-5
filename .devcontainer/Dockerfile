@@ -27,9 +27,9 @@ RUN curl -fsSL https://code-server.dev/install.sh | sh -s -- --method=standalone
 RUN curl -fsSL "https://github.com/axllent/mailpit/releases/download/v1.24.1/mailpit-linux-amd64.tar.gz" | tar -xz -C /usr/local/bin/ mailpit \
     && chmod +x /usr/local/bin/mailpit
 
-# Install pgweb (PostgreSQL web admin)
+# Install pgweb (PostgreSQL web admin) - use php to extract zip since unzip/bsdtar unavailable
 RUN curl -fsSL "https://github.com/sosedoff/pgweb/releases/download/v0.16.2/pgweb_linux_amd64.zip" -o /tmp/pgweb.zip \
-    && bsdtar -xf /tmp/pgweb.zip -C /tmp/ \
+    && php -r '$z=new ZipArchive();$z->open("/tmp/pgweb.zip");$z->extractTo("/tmp/");$z->close();' \
     && mv /tmp/pgweb_linux_amd64 /usr/local/bin/pgweb \
     && chmod +x /usr/local/bin/pgweb \
     && rm -f /tmp/pgweb.zip
