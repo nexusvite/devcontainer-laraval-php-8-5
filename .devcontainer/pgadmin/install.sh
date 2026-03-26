@@ -14,9 +14,12 @@ if ! command -v pgweb &>/dev/null; then
     VERSION="0.16.2"
     echo "Downloading pgweb ${VERSION}..."
     curl -fsSL "https://github.com/sosedoff/pgweb/releases/download/v${VERSION}/pgweb_linux_amd64.zip" -o /tmp/pgweb.zip
-    cd /tmp && unzip -o pgweb.zip && sudo mv pgweb_linux_amd64 /usr/local/bin/pgweb
+    # Install unzip if needed
+    which unzip > /dev/null 2>&1 || (sudo apt-get update && sudo apt-get install -y unzip)
+    cd /tmp && unzip -o pgweb.zip
+    sudo mv /tmp/pgweb_linux_amd64 /usr/local/bin/pgweb
     sudo chmod +x /usr/local/bin/pgweb
-    rm -f /tmp/pgweb.zip /tmp/pgweb_linux_amd64
+    rm -f /tmp/pgweb.zip
     echo "pgweb installed"
 fi
 

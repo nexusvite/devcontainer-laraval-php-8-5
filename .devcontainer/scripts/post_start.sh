@@ -40,9 +40,16 @@ fi
 
 # Start pgweb (PostgreSQL Admin) if not already running
 if ! pgrep -f "pgweb" > /dev/null; then
-    echo "Starting pgweb..."
-    if [ -f /usr/local/bin/pgadmin-entrypoint ]; then
-        /usr/local/bin/pgadmin-entrypoint || true
+    if command -v pgweb > /dev/null 2>&1; then
+        echo "Waiting for PostgreSQL..."
+        for i in $(seq 1 20); do
+            if pg_isready -h 127.0.0.1 -p 5432 -q 2>/dev/null || nc -z 127.0.0.1 5432 2>/dev/null; then
+                echo "Starting pgweb..."
+                /usr/local/bin/pgadmin-entrypoint || true
+                break
+            fi
+            sleep 2
+        done
     fi
 fi
 
