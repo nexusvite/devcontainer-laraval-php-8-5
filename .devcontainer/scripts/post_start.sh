@@ -5,7 +5,6 @@ echo "Running post-start setup..."
 # Start code-server if not already running
 if ! pgrep -f "code-server" > /dev/null; then
     echo "Starting code-server..."
-    # Wait for code-server binary (may still be installing from post_create)
     for i in $(seq 1 30); do
         if command -v code-server > /dev/null 2>&1; then
             nohup code-server --auth none --port 13337 --host 0.0.0.0 > /tmp/code-server.log 2>&1 &
@@ -39,25 +38,35 @@ if ! pgrep -f "php.*phpmyadmin" > /dev/null; then
 fi
 
 # Start pgweb (PostgreSQL Admin) if not already running
-if ! pgrep -f "pgweb" > /dev/null; then
-    if command -v pgweb > /dev/null 2>&1; then
-        echo "Waiting for PostgreSQL..."
-        for i in $(seq 1 20); do
-            if pg_isready -h 127.0.0.1 -p 5432 -q 2>/dev/null || nc -z 127.0.0.1 5432 2>/dev/null; then
-                echo "Starting pgweb..."
+if ! pgrep -f "pgweb" > /dev/null && command -v pgweb > /dev/null 2>&1; then
+    echo "Waiting for PostgreSQL..."
+    for i in $(seq 1 30); do
+        if nc -z 127.0.0.1 5432 2>/dev/null; then
+            echo "  PostgreSQL ready"
+            if [ -f /usr/local/bin/pgadmin-entrypoint ]; then
                 /usr/local/bin/pgadmin-entrypoint || true
-                break
+            else
+                # Fallback: start pgweb directly
+                PG_NAME="${PG_NAME:-${DB_NAME:-devcontainer_db}}"
+                nohup pgweb --bind 0.0.0.0 --listen 8082 --host 127.0.0.1 --port 5432 --user "${PG_USER:-postgres}" --pass "${PG_PASSWORD:-postgres}" --db "$PG_NAME" --ssl disable > /tmp/pgweb.log 2>&1 &
+                echo "  pgweb started on port 8082"
             fi
-            sleep 2
-        done
-    fi
+            break
+        fi
+        echo "  Waiting for PostgreSQL... ($i/30)"
+        sleep 2
+    done
 fi
 
 # Start Mailpit if not already running
-if ! pgrep -f "mailpit" > /dev/null; then
+if ! pgrep -f "mailpit" > /dev/null && command -v mailpit > /dev/null 2>&1; then
     echo "Starting Mailpit..."
     if [ -f /usr/local/bin/mailpit-entrypoint ]; then
         /usr/local/bin/mailpit-entrypoint || true
+    else
+        # Fallback: start mailpit directly
+        nohup mailpit --smtp 0.0.0.0:1025 --listen 0.0.0.0:8025 --webroot / > /tmp/mailpit.log 2>&1 &
+        echo "  Mailpit started (SMTP: 1025, UI: 8025)"
     fi
 fi
 
