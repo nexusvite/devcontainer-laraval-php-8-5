@@ -10,3 +10,4 @@
 /.nova
 /.zed
 .devcontainer/.claude-credentials
+.claude/settings.local.json

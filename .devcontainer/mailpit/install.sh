@@ -37,7 +37,7 @@ printf "Starting Mailpit...\n"
 printf "SMTP: 0.0.0.0:\${SMTP_PORT}\n"
 printf "Web UI: http://localhost:\${UI_PORT}\n"
 
-nohup mailpit --smtp 0.0.0.0:\${SMTP_PORT} --listen 0.0.0.0:\${UI_PORT} >> "\${LOG_PATH}" 2>&1 &
+nohup mailpit --smtp 0.0.0.0:\${SMTP_PORT} --listen 0.0.0.0:\${UI_PORT} --webroot / >> "\${LOG_PATH}" 2>&1 &
 
 printf "Mailpit started\n"
 printf "Logs at \${LOG_PATH}\n\n"

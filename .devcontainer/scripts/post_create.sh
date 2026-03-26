@@ -131,22 +131,14 @@ if [ -f "artisan" ]; then
     fi
 fi
 
-# Initialize fresh git repository
+# Always start with a fresh git repository (remove template history)
 WORKSPACE_NAME="${CODER_WORKSPACE_NAME:-$(basename $(pwd))}"
-if [ ! -d ".git" ]; then
-    echo "Initializing git repository: $WORKSPACE_NAME"
-    git init
-    git add .
-    git commit -m "Initial commit - $WORKSPACE_NAME" --no-verify || true
-elif [ -d ".git" ]; then
-    REMOTE_URL=$(git remote get-url origin 2>/dev/null || echo "")
-    if echo "$REMOTE_URL" | grep -q "template\|Template" 2>/dev/null; then
-        rm -rf .git
-        git init
-        git add .
-        git commit -m "Initial commit - $WORKSPACE_NAME" --no-verify || true
-    fi
-fi
+echo "Initializing fresh git repository: $WORKSPACE_NAME"
+rm -rf .git
+git init
+git add .
+git commit -m "Initial commit - $WORKSPACE_NAME" --no-verify || true
+echo "Git repository initialized"
 
 # Ensure filebrowser entrypoint is executable
 if [ -f /usr/local/bin/filebrowser-entrypoint ]; then
@@ -166,6 +158,20 @@ elif [ -f "$CRED_FILE" ]; then
     echo "Claude Code credentials configured (OAuth from host)"
 else
     echo "Note: Set ANTHROPIC_API_KEY or auth with 'claude auth login' after startup"
+fi
+
+# Set up Claude Code marketplaces and skills (requires auth)
+if command -v claude > /dev/null 2>&1 && [ -f ~/.claude/.credentials.json -o -n "$ANTHROPIC_API_KEY" ]; then
+    echo "Setting up Claude Code marketplaces and skills..."
+    # Add official marketplaces
+    claude plugin marketplace add anthropics/claude-plugins-official 2>/dev/null || true
+    claude plugin marketplace add anthropics/skills 2>/dev/null || true
+    # Install commonly used plugins
+    claude plugin install commit-commands --scope project 2>/dev/null || true
+    claude plugin install code-review --scope project 2>/dev/null || true
+    claude plugin install feature-dev --scope project 2>/dev/null || true
+    claude plugin install pr-review-toolkit --scope project 2>/dev/null || true
+    echo "Claude Code skills configured"
 fi
 
 # Copy SSH keys from host if available
