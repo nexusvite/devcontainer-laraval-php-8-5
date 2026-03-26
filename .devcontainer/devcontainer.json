@@ -1,0 +1,122 @@
+// For format details, see https://aka.ms/devcontainer.json.
+{
+	"name": "PHP 8.5 - MariaDB",
+	"dockerComposeFile": "docker-compose.yml",
+	"service": "app",
+	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+
+	// Generate .env file before docker-compose runs, preserving ANTHROPIC_API_KEY if already set
+	"initializeCommand": "cd .devcontainer && EXISTING_KEY=$(grep '^ANTHROPIC_API_KEY=' .env 2>/dev/null | cut -d= -f2) ; echo \"DB_NAME=${CODER_WORKSPACE_NAME:-${localWorkspaceFolderBasename}}\" > .env && echo \"DB_USER=root\" >> .env && echo \"DB_PASSWORD=mariadb\" >> .env && echo \"ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-$EXISTING_KEY}\" >> .env",
+
+	// Local features only — no external features that pull in common-utils
+	// (apt-get is unavailable during Coder's Docker build phase).
+	// code-server is installed at runtime in post_create.sh instead.
+	"features": {
+		"./filebrowser": {
+			"folder": "${containerWorkspaceFolder}"
+		},
+		"./phpmyadmin": {
+			"port": "8081",
+			"dbHost": "127.0.0.1",
+			"dbPort": "3306"
+		}
+	},
+
+	// Configure tool-specific properties.
+	"customizations": {
+		// Configure properties specific to VS Code.
+		"vscode": {
+			"extensions": [
+				"bmewburn.vscode-intelephense-client",
+				"xdebug.php-debug"
+			]
+		},
+		// Coder-specific customizations for external editor integrations.
+		"coder": {
+			"apps": [
+				{
+					"slug": "cursor",
+					"displayName": "Cursor Desktop",
+					"url": "cursor://coder.coder-remote/openDevContainer?owner=${localEnv:CODER_WORKSPACE_OWNER_NAME}&workspace=${localEnv:CODER_WORKSPACE_NAME}&agent=${localEnv:CODER_WORKSPACE_PARENT_AGENT_NAME}&url=${localEnv:CODER_URL}&token=$SESSION_TOKEN&devContainerName=${localEnv:CONTAINER_ID}&devContainerFolder=${containerWorkspaceFolder}&localWorkspaceFolder=${localWorkspaceFolder}",
+					"external": true,
+					"icon": "/icon/cursor.svg",
+					"order": 1
+				},
+				{
+					"slug": "windsurf",
+					"displayName": "Windsurf Editor",
+					"url": "windsurf://coder.coder-remote/openDevContainer?owner=${localEnv:CODER_WORKSPACE_OWNER_NAME}&workspace=${localEnv:CODER_WORKSPACE_NAME}&agent=${localEnv:CODER_WORKSPACE_PARENT_AGENT_NAME}&url=${localEnv:CODER_URL}&token=$SESSION_TOKEN&devContainerName=${localEnv:CONTAINER_ID}&devContainerFolder=${containerWorkspaceFolder}&localWorkspaceFolder=${localWorkspaceFolder}",
+					"external": true,
+					"icon": "/icon/windsurf.svg",
+					"order": 2
+				},
+				{
+					"slug": "zed",
+					"displayName": "Zed Editor",
+					"url": "zed://ssh/${localEnv:CODER_WORKSPACE_AGENT_NAME}.${localEnv:CODER_WORKSPACE_NAME}.${localEnv:CODER_WORKSPACE_OWNER_NAME}.coder${containerWorkspaceFolder}",
+					"external": true,
+					"icon": "/icon/zed.svg",
+					"order": 5
+				},
+				{
+					"slug": "code",
+					"displayName": "code-server",
+					"url": "http://${localEnv:FEATURE_CODE_SERVER_OPTION_HOST:127.0.0.1}:${localEnv:FEATURE_CODE_SERVER_OPTION_PORT:13337}/?folder=${containerWorkspaceFolder}",
+					"openIn": "${localEnv:FEATURE_CODE_SERVER_OPTION_APPOPENIN:slim-window}",
+					"share": "${localEnv:FEATURE_CODE_SERVER_OPTION_APPSHARE:owner}",
+					"icon": "/icon/code.svg",
+					"order": 4,
+					"healthCheck": {
+						"url": "http://${localEnv:FEATURE_CODE_SERVER_OPTION_HOST:127.0.0.1}:${localEnv:FEATURE_CODE_SERVER_OPTION_PORT:13337}/healthz",
+						"interval": 5,
+						"threshold": 2
+					}
+				}
+			]
+		}
+	},
+
+	// Use 'forwardPorts' to make a list of ports inside the container available locally.
+	"forwardPorts": [
+		8000,
+		8080,
+		3306,
+		8081,
+		13337,
+		13339,
+		5173
+	],
+	"portsAttributes": {
+		"8000": {
+			"label": "PHP Dev Server",
+			"onAutoForward": "notify"
+		},
+		"5173": {
+			"label": "Vite",
+			"onAutoForward": "silent"
+		},
+		"8080": {
+			"label": "Apache",
+			"onAutoForward": "notify"
+		},
+		"3306": {
+			"label": "MariaDB",
+			"onAutoForward": "silent"
+		},
+		"8081": {
+			"label": "phpMyAdmin",
+			"onAutoForward": "notify"
+		},
+		"13337": {
+			"label": "code-server",
+			"onAutoForward": "silent"
+		},
+		"13339": {
+			"label": "File Browser",
+			"onAutoForward": "silent"
+		}
+	},
+
+	"postCreateCommand": ["./.devcontainer/scripts/post_create.sh"],
+	"postStartCommand": ["./.devcontainer/scripts/post_start.sh"]
+}

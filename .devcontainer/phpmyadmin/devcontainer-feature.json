@@ -1,0 +1,42 @@
+{
+	"id": "phpmyadmin",
+	"version": "0.0.1",
+	"name": "phpMyAdmin",
+	"description": "A web-based MySQL/MariaDB database administration tool",
+	"options": {
+		"port": {
+			"type": "string",
+			"default": "8081",
+			"description": "The port to run phpMyAdmin on"
+		},
+		"dbHost": {
+			"type": "string",
+			"default": "127.0.0.1",
+			"description": "The database host"
+		},
+		"dbPort": {
+			"type": "string",
+			"default": "3306",
+			"description": "The database port"
+		}
+	},
+	"entrypoint": "/usr/local/bin/phpmyadmin-entrypoint",
+	"customizations": {
+		"coder": {
+			"apps": [
+				{
+					"slug": "pma",
+					"displayName": "phpMyAdmin",
+					"url": "http://localhost:${localEnv:FEATURE_PHPMYADMIN_OPTION_PORT:8081}",
+					"icon": "/icon/database.svg",
+					"order": 6,
+					"healthcheck": {
+						"url": "http://localhost:${localEnv:FEATURE_PHPMYADMIN_OPTION_PORT:8081}",
+						"interval": 5,
+						"threshold": 2
+					}
+				}
+			]
+		}
+	}
+}
