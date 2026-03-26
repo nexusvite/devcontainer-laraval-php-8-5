@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 echo "Running post-start setup..."
 
@@ -41,7 +41,7 @@ fi
 if ! pgrep -f "pgweb" > /dev/null && command -v pgweb > /dev/null 2>&1; then
     echo "Waiting for PostgreSQL..."
     for i in $(seq 1 30); do
-        if nc -z 127.0.0.1 5432 2>/dev/null; then
+        if (echo > /dev/tcp/127.0.0.1/5432) 2>/dev/null; then
             echo "  PostgreSQL ready"
             if [ -f /usr/local/bin/pgadmin-entrypoint ]; then
                 /usr/local/bin/pgadmin-entrypoint || true
